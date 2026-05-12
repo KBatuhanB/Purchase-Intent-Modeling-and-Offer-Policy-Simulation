@@ -212,5 +212,4 @@ npm run build
 
 This repository is best read as evidence of how I think through messy, real-world ML work: I do not stop at training a model. I audit the data, question suspicious features, build repeatable artifacts, validate edge cases, expose limitations honestly, and package the result in a way that non-technical stakeholders can actually review.
 
-If you want the shortest path through the repo, start with the executive summary, then inspect the phase reports, and finish with the frontend demo.#   P u r c h a s e - I n t e n t - M o d e l i n g - a n d - O f f e r - P o l i c y - S i m u l a t i o n  
- 
+If you want the shortest path through the repo, start with the executive summary, then inspect the phase reports, and finish with the frontend demo.
