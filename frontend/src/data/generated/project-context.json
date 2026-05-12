@@ -1,0 +1,526 @@
+{
+  "schema": {
+    "Age": {
+      "required": true,
+      "purpose": "Müşterinin yaşı; segment ve davranış bağlamını destekler.",
+      "kind": "integer_range",
+      "min_value": 18,
+      "max_value": 70,
+      "example_value": 44
+    },
+    "Gender": {
+      "required": true,
+      "purpose": "Müşterinin cinsiyeti (0: Erkek, 1: Kadın)",
+      "kind": "categorical_integer",
+      "allowed_values": [
+        0,
+        1
+      ],
+      "example_value": 0
+    },
+    "AnnualIncome": {
+      "required": true,
+      "purpose": "Müşterinin yıllık gelir seviyesi.",
+      "kind": "float_range",
+      "min_value": 20000,
+      "max_value": 150000,
+      "example_value": 85000
+    },
+    "NumberOfPurchases": {
+      "required": true,
+      "purpose": "Müşterinin geçmiş satın alma sayısı.",
+      "kind": "integer_range",
+      "min_value": 0,
+      "max_value": 20,
+      "example_value": 10
+    },
+    "ProductCategory": {
+      "required": true,
+      "purpose": "Satın alınan ürünün kategorisi (0: Elektronik, 1: Giyim, 2: Ev Yaşam, 3: Güzellik, 4: Spor)",
+      "kind": "categorical_integer",
+      "allowed_values": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "example_value": 0
+    },
+    "TimeSpentOnWebsite": {
+      "required": true,
+      "purpose": "Müşterinin sitede geçirdiği süre.",
+      "kind": "float_range",
+      "min_value": 1,
+      "max_value": 60,
+      "example_value": 31
+    },
+    "LoyaltyProgram": {
+      "required": true,
+      "purpose": "Müşterinin sadakat programına üyeliği (0: Hayır, 1: Evet)",
+      "kind": "categorical_integer",
+      "allowed_values": [
+        0,
+        1
+      ],
+      "example_value": 0
+    }
+  },
+  "policy": {
+    "championModelName": "random_forest_sigmoid_calibrated",
+    "readinessStatus": "hazir",
+    "validatedMetrics": {
+      "accuracy": 0.73741,
+      "precision": 0.717557,
+      "recall": 0.723077,
+      "f1": 0.720307,
+      "roc_auc": 0.856029,
+      "pr_auc": 0.833539,
+      "balanced_accuracy": 0.736538,
+      "brier_score": 0.154752,
+      "confusion_matrix": [
+        [
+          111,
+          37
+        ],
+        [
+          36,
+          94
+        ]
+      ]
+    },
+    "decisionBands": {
+      "low_action_threshold": 0.2,
+      "binary_decision_threshold": 0.3,
+      "high_confidence_no_discount_threshold": 0.45
+    },
+    "policyBandSummary": {
+      "high_confidence_no_discount": {
+        "count": 144,
+        "share": 0.517986,
+        "observed_purchase_rate": 0.6875,
+        "average_probability": 0.740225
+      },
+      "mid_band_targeted_offer": {
+        "count": 60,
+        "share": 0.215827,
+        "observed_purchase_rate": 0.433333,
+        "average_probability": 0.341325
+      },
+      "low_intent_holdout": {
+        "count": 74,
+        "share": 0.266187,
+        "observed_purchase_rate": 0.067568,
+        "average_probability": 0.082045
+      }
+    },
+    "actionCatalog": [
+      {
+        "action_key": "holdout_low_cost_nurture",
+        "title": "Düşük maliyetli hatırlatma",
+        "description": "Düşük olasılıklı müşteriye indirim yerine hafif bir hatırlatma uygulanır.",
+        "default_discount_rate": 0,
+        "expected_uplift": 0.01,
+        "contact_cost": 0.1,
+        "primary_channel": "email_or_push",
+        "target_bands": [
+          "low_intent_holdout"
+        ]
+      },
+      {
+        "action_key": "targeted_standard_discount",
+        "title": "Standart hedefli indirim",
+        "description": "Kararsız müşteride dönüşümü artırmak için kontrollü indirim uygulanır.",
+        "default_discount_rate": 0.1,
+        "expected_uplift": 0.15,
+        "contact_cost": 0.5,
+        "primary_channel": "email_plus_web_banner",
+        "target_bands": [
+          "lower_targeting_band"
+        ]
+      },
+      {
+        "action_key": "targeted_light_discount",
+        "title": "Hafif indirim veya paket",
+        "description": "Satın almaya yakın müşteride marjı koruyan hafif teklif uygulanır.",
+        "default_discount_rate": 0.05,
+        "expected_uplift": 0.08,
+        "contact_cost": 0.4,
+        "primary_channel": "onsite_or_email",
+        "target_bands": [
+          "upper_targeting_band"
+        ]
+      },
+      {
+        "action_key": "protect_margin_no_discount",
+        "title": "Marjı koru, indirim verme",
+        "description": "Müşteri zaten satın almaya yakın olduğu için gereksiz indirim uygulanmaz.",
+        "default_discount_rate": 0,
+        "expected_uplift": 0,
+        "contact_cost": 0,
+        "primary_channel": "none",
+        "target_bands": [
+          "high_confidence_no_discount"
+        ]
+      },
+      {
+        "action_key": "manual_review_discount_cap",
+        "title": "Manuel inceleme ve indirim sınırı",
+        "description": "Belirsiz vakalarda otomatik karar durdurulur ve karar manuel incelemeye bırakılır.",
+        "default_discount_rate": 0.05,
+        "expected_uplift": 0.05,
+        "contact_cost": 0.6,
+        "primary_channel": "manual_queue",
+        "target_bands": [
+          "lower_targeting_band",
+          "upper_targeting_band",
+          "high_confidence_no_discount"
+        ]
+      }
+    ],
+    "businessInsights": [
+      "Champion modelde en baskin sinyal LoyaltyProgram oldu; ortalama mutlak SHAP etkisi 0.150566 seviyesinde.",
+      "Champion ve challenger modellerin ilk uc aciklayici sinyalinde ortusen ozellikler goruldu: Age, LoyaltyProgram, TimeSpentOnWebsite.",
+      "LoyaltyProgram:loyalty_0 icin recall farki 0.125674 oldu; bu segment final sunumunda dikkatle yorumlanmalidir.",
+      "Esik yakinindaki kararsiz vakalarda karar agirlikli olarak NumberOfPurchases, LoyaltyProgram sinyalleriyle sekillendi."
+    ],
+    "fairnessAlerts": [
+      {
+        "group_name": "LoyaltyProgram",
+        "group_value": "loyalty_0",
+        "metric_name": "recall",
+        "gap_value": 0.125674,
+        "message": "LoyaltyProgram:loyalty_0 icin recall farki 0.125674 oldu; bu segment final sunumunda dikkatle yorumlanmalidir."
+      },
+      {
+        "group_name": "LoyaltyProgram",
+        "group_value": "loyalty_0",
+        "metric_name": "positive_prediction_rate",
+        "gap_value": 0.130909,
+        "message": "LoyaltyProgram:loyalty_0 icin positive_prediction_rate farki 0.130909 oldu; bu segment final sunumunda dikkatle yorumlanmalidir."
+      },
+      {
+        "group_name": "LoyaltyProgram",
+        "group_value": "loyalty_0",
+        "metric_name": "false_negative_rate",
+        "gap_value": 0.125674,
+        "message": "LoyaltyProgram:loyalty_0 icin false_negative_rate farki 0.125674 oldu; bu segment final sunumunda dikkatle yorumlanmalidir."
+      },
+      {
+        "group_name": "LoyaltyProgram",
+        "group_value": "loyalty_1",
+        "metric_name": "recall",
+        "gap_value": 0.182583,
+        "message": "LoyaltyProgram:loyalty_1 icin recall farki 0.182583 oldu; bu segment final sunumunda dikkatle yorumlanmalidir."
+      },
+      {
+        "group_name": "LoyaltyProgram",
+        "group_value": "loyalty_1",
+        "metric_name": "positive_prediction_rate",
+        "gap_value": 0.287398,
+        "message": "LoyaltyProgram:loyalty_1 icin positive_prediction_rate farki 0.287398 oldu; bu segment final sunumunda dikkatle yorumlanmalidir."
+      },
+      {
+        "group_name": "LoyaltyProgram",
+        "group_value": "loyalty_1",
+        "metric_name": "false_positive_rate",
+        "gap_value": 0.279412,
+        "message": "LoyaltyProgram:loyalty_1 icin false_positive_rate farki 0.279412 oldu; bu segment final sunumunda dikkatle yorumlanmalidir."
+      },
+      {
+        "group_name": "LoyaltyProgram",
+        "group_value": "loyalty_1",
+        "metric_name": "false_negative_rate",
+        "gap_value": 0.182583,
+        "message": "LoyaltyProgram:loyalty_1 icin false_negative_rate farki 0.182583 oldu; bu segment final sunumunda dikkatle yorumlanmalidir."
+      },
+      {
+        "group_name": "ProductCategory",
+        "group_value": "category_3",
+        "metric_name": "recall",
+        "gap_value": 0.151923,
+        "message": "ProductCategory:category_3 icin recall farki 0.151923 oldu; bu segment final sunumunda dikkatle yorumlanmalidir."
+      },
+      {
+        "group_name": "ProductCategory",
+        "group_value": "category_3",
+        "metric_name": "false_negative_rate",
+        "gap_value": 0.151923,
+        "message": "ProductCategory:category_3 icin false_negative_rate farki 0.151923 oldu; bu segment final sunumunda dikkatle yorumlanmalidir."
+      },
+      {
+        "group_name": "AgeBand",
+        "group_value": "18_29",
+        "metric_name": "positive_prediction_rate",
+        "gap_value": 0.190749,
+        "message": "AgeBand:18_29 icin positive_prediction_rate farki 0.190749 oldu; bu segment final sunumunda dikkatle yorumlanmalidir."
+      },
+      {
+        "group_name": "AgeBand",
+        "group_value": "45_plus",
+        "metric_name": "precision",
+        "gap_value": 0.14893,
+        "message": "AgeBand:45_plus icin precision farki 0.14893 oldu; bu segment final sunumunda dikkatle yorumlanmalidir."
+      }
+    ],
+    "simulationOverview": {
+      "total_scenarios": 12,
+      "origin_counts": {
+        "phase7_reference": 8,
+        "phase9_synthetic": 4
+      },
+      "manual_review_share": 0.166667
+    },
+    "actionDistribution": {
+      "protect_margin_no_discount": 8,
+      "holdout_low_cost_nurture": 2,
+      "targeted_standard_discount": 2
+    },
+    "validationOverview": {
+      "edgeCaseSummary": {
+        "total_cases": 9,
+        "passed_cases": 9,
+        "failed_cases": 0
+      },
+      "reproducibilitySummary": {
+        "runs_evaluated": 2,
+        "scenario_count": 12,
+        "max_probability_delta": 0,
+        "action_mismatch_count": 0,
+        "band_mismatch_count": 0,
+        "manual_review_mismatch_count": 0,
+        "deterministic": true,
+        "run_details": [
+          {
+            "run_index": 1,
+            "scenario_details": [
+              {
+                "scenario_id": "high_confidence_true_positive",
+                "probability_delta": 0,
+                "action_match": true,
+                "band_match": true,
+                "manual_review_match": true
+              },
+              {
+                "scenario_id": "high_confidence_true_negative",
+                "probability_delta": 0,
+                "action_match": true,
+                "band_match": true,
+                "manual_review_match": true
+              },
+              {
+                "scenario_id": "boundary_case",
+                "probability_delta": 0,
+                "action_match": true,
+                "band_match": true,
+                "manual_review_match": true
+              },
+              {
+                "scenario_id": "false_positive",
+                "probability_delta": 0,
+                "action_match": true,
+                "band_match": true,
+                "manual_review_match": true
+              },
+              {
+                "scenario_id": "false_negative",
+                "probability_delta": 0,
+                "action_match": true,
+                "band_match": true,
+                "manual_review_match": true
+              },
+              {
+                "scenario_id": "loyalty_positive_intent",
+                "probability_delta": 0,
+                "action_match": true,
+                "band_match": true,
+                "manual_review_match": true
+              },
+              {
+                "scenario_id": "non_loyal_high_time",
+                "probability_delta": 0,
+                "action_match": true,
+                "band_match": true,
+                "manual_review_match": true
+              },
+              {
+                "scenario_id": "low_history_surprise_purchase",
+                "probability_delta": 0,
+                "action_match": true,
+                "band_match": true,
+                "manual_review_match": true
+              },
+              {
+                "scenario_id": "synthetic_min_signal_new_visitor",
+                "probability_delta": 0,
+                "action_match": true,
+                "band_match": true,
+                "manual_review_match": true
+              },
+              {
+                "scenario_id": "synthetic_premium_window_shopper",
+                "probability_delta": 0,
+                "action_match": true,
+                "band_match": true,
+                "manual_review_match": true
+              },
+              {
+                "scenario_id": "synthetic_loyal_discount_fatigue",
+                "probability_delta": 0,
+                "action_match": true,
+                "band_match": true,
+                "manual_review_match": true
+              },
+              {
+                "scenario_id": "synthetic_young_high_attention_boundary",
+                "probability_delta": 0,
+                "action_match": true,
+                "band_match": true,
+                "manual_review_match": true
+              }
+            ]
+          },
+          {
+            "run_index": 2,
+            "scenario_details": [
+              {
+                "scenario_id": "high_confidence_true_positive",
+                "probability_delta": 0,
+                "action_match": true,
+                "band_match": true,
+                "manual_review_match": true
+              },
+              {
+                "scenario_id": "high_confidence_true_negative",
+                "probability_delta": 0,
+                "action_match": true,
+                "band_match": true,
+                "manual_review_match": true
+              },
+              {
+                "scenario_id": "boundary_case",
+                "probability_delta": 0,
+                "action_match": true,
+                "band_match": true,
+                "manual_review_match": true
+              },
+              {
+                "scenario_id": "false_positive",
+                "probability_delta": 0,
+                "action_match": true,
+                "band_match": true,
+                "manual_review_match": true
+              },
+              {
+                "scenario_id": "false_negative",
+                "probability_delta": 0,
+                "action_match": true,
+                "band_match": true,
+                "manual_review_match": true
+              },
+              {
+                "scenario_id": "loyalty_positive_intent",
+                "probability_delta": 0,
+                "action_match": true,
+                "band_match": true,
+                "manual_review_match": true
+              },
+              {
+                "scenario_id": "non_loyal_high_time",
+                "probability_delta": 0,
+                "action_match": true,
+                "band_match": true,
+                "manual_review_match": true
+              },
+              {
+                "scenario_id": "low_history_surprise_purchase",
+                "probability_delta": 0,
+                "action_match": true,
+                "band_match": true,
+                "manual_review_match": true
+              },
+              {
+                "scenario_id": "synthetic_min_signal_new_visitor",
+                "probability_delta": 0,
+                "action_match": true,
+                "band_match": true,
+                "manual_review_match": true
+              },
+              {
+                "scenario_id": "synthetic_premium_window_shopper",
+                "probability_delta": 0,
+                "action_match": true,
+                "band_match": true,
+                "manual_review_match": true
+              },
+              {
+                "scenario_id": "synthetic_loyal_discount_fatigue",
+                "probability_delta": 0,
+                "action_match": true,
+                "band_match": true,
+                "manual_review_match": true
+              },
+              {
+                "scenario_id": "synthetic_young_high_attention_boundary",
+                "probability_delta": 0,
+                "action_match": true,
+                "band_match": true,
+                "manual_review_match": true
+              }
+            ]
+          }
+        ]
+      },
+      "performanceSummary": {
+        "single_scenario_avg_ms": 774.239545,
+        "batch_avg_ms": 9130.77328,
+        "scenario_count": 12,
+        "throughput_scenarios_per_second": 1.314237,
+        "meets_demo_budget": true,
+        "budget_thresholds_ms": {
+          "single_scenario": 1500,
+          "batch": 15000
+        },
+        "note": "SHAP hesaplamasi Faz 7'de onceden uretildigi icin Faz 10 benchmark'i demo yuzeyindeki validasyon ve skor akisini olcer."
+      }
+    }
+  },
+  "ui": {
+    "fakeProduct": {
+      "marketplaceName": "PazarNova",
+      "productTitle": "Nova X17 512 GB Ada Çayı",
+      "brand": "Nova Mobile",
+      "priceTry": 89999,
+      "rating": 4.8,
+      "reviewCount": 16,
+      "monthlyPaymentLabel": "3 ay 31.796 TL'den başlayan ödeme seçenekleri",
+      "heroBadges": [
+        "Hızlı Teslimat",
+        "Sigortaya Uygun",
+        "Demo Sahnesi"
+      ],
+      "sellerCards": [
+        {
+          "sellerName": "PazarNova",
+          "sellerScore": 9.2,
+          "badge": "Hızlı Satıcı",
+          "priceTry": 89999
+        },
+        {
+          "sellerName": "Mediatel",
+          "sellerScore": 9.1,
+          "badge": "Kargo Bedava",
+          "priceTry": 90999
+        }
+      ],
+      "galleryLabels": [
+        "Arka Görünüm",
+        "Ön Görünüm",
+        "Kamera",
+        "Kenar Detayı",
+        "Kutu"
+      ],
+      "accentColor": "#f27a1a"
+    }
+  }
+}

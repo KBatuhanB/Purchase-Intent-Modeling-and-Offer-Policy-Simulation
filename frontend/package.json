@@ -1,0 +1,21 @@
+{
+  "name": "veri-madenciligi-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sync-data": "node ./scripts/sync-phase-artifacts.mjs",
+    "predev": "npm run sync-data",
+    "dev": "vite",
+    "prebuild": "npm run sync-data",
+    "build": "tsc --noEmit && vite build",
+    "pretest": "npm run sync-data",
+    "test": "vitest run",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vitest": "^3.2.4"
+  }
+}
